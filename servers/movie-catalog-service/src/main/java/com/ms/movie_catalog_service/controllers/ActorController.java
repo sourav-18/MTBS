@@ -29,4 +29,9 @@ public class ActorController {
         return actorService.list(actorListQueryDto);
     }
 
+    @PutMapping("/{actorId}")
+    public Map<String,Object> update(@PathVariable("actorId") Integer actorId,@Valid @RequestBody ActorRequestDto actorRequestDto){
+        return actorService.update(actorId,actorRequestDto);
+    }
+
 }

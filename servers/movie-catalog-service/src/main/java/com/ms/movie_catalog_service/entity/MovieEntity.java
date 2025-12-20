@@ -1,15 +1,16 @@
 package com.ms.movie_catalog_service.entity;
 
+import com.ms.movie_catalog_service.entity.type.MovieStatusType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity(name = "movies")
@@ -23,13 +24,27 @@ public class MovieEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String description;//todo
+    @Column(nullable = false,columnDefinition = "TEXT")
+    private String description;
 
-    @OneToMany
-    private Set<LanguageEntity> languages=new HashSet<>();
+    private Set<String> imageUrls;
 
-    @OneToMany
+    @ManyToMany
+    @JoinTable(
+            name = "movie_languages",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "language_id")
+    )
+    private Set<LanguageEntity> languages;
+
+    private MovieStatusType status=MovieStatusType.Active;
+
+    @ManyToMany
+    @JoinTable(
+            name = "movie_actors",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "actor_id")
+    )
     private Set<ActorEntity> actors=new HashSet<>();
 
     @Column(nullable = false)

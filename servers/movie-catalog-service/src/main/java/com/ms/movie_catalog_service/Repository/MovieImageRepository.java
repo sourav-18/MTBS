@@ -1,10 +1,11 @@
 package com.ms.movie_catalog_service.Repository;
 
-import com.ms.movie_catalog_service.entity.MovieEntity;
+
+import com.ms.movie_catalog_service.entity.MovieImageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MovieRepository extends JpaRepository<MovieEntity,Integer> {
+public interface MovieImageRepository extends JpaRepository<MovieImageEntity,Integer> {
 
 }

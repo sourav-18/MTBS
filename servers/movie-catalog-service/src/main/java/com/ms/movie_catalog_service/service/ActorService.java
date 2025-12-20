@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public class ActorService {
     private final ActorRepository actorRepository;
 
     public Map<String,Object> create(ActorRequestDto actorRequestDto,Integer userId){
-        ActorEntity newActor= ActorMapper.toModel(actorRequestDto);
+        ActorEntity newActor= ActorMapper.toEntity(actorRequestDto);
         newActor.setCreatedBy(userId);
        ActorEntity dbRes= actorRepository.save(newActor);
        return ResponseUtils.sendSuccess("actor create successfully",dbRes.getId());
@@ -40,5 +41,27 @@ public class ActorService {
                 (actorsList.getContent(),actorsList.getTotalPages(),actorsList.getTotalElements());
 
         return ResponseUtils.sendSuccess("actors fetch successfully",listWithPageDetailsDto);
+    }
+
+    @Transactional
+    public Map<String,Object> update(Integer actorId,ActorRequestDto actorRequestDto){
+        Integer updateDbRes=actorRepository.updateById(
+                actorRequestDto.getName(),
+                actorRequestDto.getGender(),
+                actorRequestDto.getProfilePicture(),
+                actorId
+        );
+        System.out.println(updateDbRes);
+        if(updateDbRes==0){
+            return ResponseUtils.sendError("actor not found",null);
+        }
+
+        ActorResponseDto actorResponseDto= new ActorResponseDto(
+                actorId,
+                actorRequestDto.getName(),
+                actorRequestDto.getGender(),
+                actorRequestDto.getProfilePicture());
+
+        return ResponseUtils.sendSuccess("actor update successfully",actorResponseDto);
     }
 }
