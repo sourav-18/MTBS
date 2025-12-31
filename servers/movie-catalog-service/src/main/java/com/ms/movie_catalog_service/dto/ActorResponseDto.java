@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,4 +18,7 @@ public class ActorResponseDto {
     private String name;
     private GenderType gender;
     private String profilePicture;
+    private LocalDate dob;
+    private String nationality;
+    private Integer rating;
 }

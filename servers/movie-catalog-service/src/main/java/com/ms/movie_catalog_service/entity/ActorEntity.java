@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +36,15 @@ public class ActorEntity {
     private GenderType gender;
 
     @Column(nullable = false)
+    private LocalDate dob;
+
+    @Column(nullable = false)
+    private String nationality;
+
+    @Column(nullable = false)
+    private Integer rating;
+
+    @Column(nullable = false)
     private Integer createdBy;
 
     private Integer updatedBy;
@@ -45,7 +55,6 @@ public class ActorEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToMany(mappedBy = "actors")
-    private Set<MovieEntity> movies = new HashSet<>();
+
 
 }

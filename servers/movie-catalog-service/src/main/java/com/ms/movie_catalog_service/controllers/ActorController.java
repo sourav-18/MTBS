@@ -2,6 +2,7 @@ package com.ms.movie_catalog_service.controllers;
 
 import com.ms.movie_catalog_service.dto.ActorListQueryDto;
 import com.ms.movie_catalog_service.dto.ActorRequestDto;
+import com.ms.movie_catalog_service.entity.type.ActorStatusType;
 import com.ms.movie_catalog_service.service.ActorService;
 import com.ms.movie_catalog_service.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/actors")
 @RequiredArgsConstructor
+@CrossOrigin
 public class ActorController {
 
     private final ActorService actorService;
@@ -33,5 +35,17 @@ public class ActorController {
     public Map<String,Object> update(@PathVariable("actorId") Integer actorId,@Valid @RequestBody ActorRequestDto actorRequestDto){
         return actorService.update(actorId,actorRequestDto);
     }
+
+    @PatchMapping("/{actorId}/status/{status}")
+    public Map<String,Object> update(@PathVariable("actorId") Integer actorId,@PathVariable("status") ActorStatusType status){
+        return actorService.statusUpdate(actorId,status);
+    }
+
+    @GetMapping("/count-details")
+    public Map<String,Object> getTotalActorCountDetails(){
+        return actorService.getTotalActorCountDetails();
+    }
+
+
 
 }

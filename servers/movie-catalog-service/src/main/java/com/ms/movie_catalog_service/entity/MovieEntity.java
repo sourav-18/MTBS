@@ -1,5 +1,6 @@
 package com.ms.movie_catalog_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ms.movie_catalog_service.entity.type.MovieStatusType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,15 +8,18 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity(name = "movies")
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MovieEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,15 +41,9 @@ public class MovieEntity {
     )
     private Set<LanguageEntity> languages;
 
+    @Enumerated(EnumType.STRING)
     private MovieStatusType status=MovieStatusType.Active;
 
-    @ManyToMany
-    @JoinTable(
-            name = "movie_actors",
-            joinColumns = @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name = "actor_id")
-    )
-    private Set<ActorEntity> actors=new HashSet<>();
 
     @Column(nullable = false)
     private LocalDate releaseDate;
@@ -61,5 +59,12 @@ public class MovieEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @Column(columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::json")
+    private String cardImagesUrls;
+
+    @Column(columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::json")
+    private String posterImageUrls;
 
 }
