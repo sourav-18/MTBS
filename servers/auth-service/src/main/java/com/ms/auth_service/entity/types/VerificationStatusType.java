@@ -1,4 +1,7 @@
 package com.ms.auth_service.entity.types;
 
-public enum verificationStatusType {
+public enum VerificationStatusType {
+    pending,
+    success,
+    failed
 }

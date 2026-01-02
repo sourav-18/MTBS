@@ -15,7 +15,7 @@ public class ActorListQueryDto{
     @Min(value = 1,message = "limit should be minimum 1")
     Integer limit;
 
-    @Size(min = 2, message = "name should be at least 2 character")
+    @Size(min = 1, message = "name should be at least 1 character")
     @Size(max = 100, message = "name should be at max 100 character")
     String search;
 }

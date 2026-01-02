@@ -2,6 +2,8 @@ package com.ms.movie_catalog_service.controllers;
 
 import com.ms.movie_catalog_service.dto.*;
 import com.ms.movie_catalog_service.dto.validators.MovieCreateValidator;
+import com.ms.movie_catalog_service.entity.type.ActorStatusType;
+import com.ms.movie_catalog_service.entity.type.MovieStatusType;
 import com.ms.movie_catalog_service.service.MovieActorService;
 import com.ms.movie_catalog_service.service.MovieService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +61,16 @@ public class MovieController {
     @PatchMapping("/{movieId}/actors/remove")
     public Map<String,Object> removeMovieActor(@PathVariable("movieId") Integer movieId,@RequestBody MovieActorUpdateDto movieActorUpdateDto){
         return movieActorService.removeMovieActor(movieId,movieActorUpdateDto);
+    }
+
+    @PatchMapping("/{movieId}/status/{status}")
+    public Map<String,Object> update(@PathVariable("movieId") Integer movieId,@PathVariable("status") MovieStatusType status){
+        return movieService.statusUpdate(movieId,status);
+    }
+
+    @GetMapping("/{movieId}/actors-list")
+    public Map<String,Object> listByMovie(@PathVariable("movieId") Integer movieId,@RequestParam(value = "search",required = false) String search){
+        return movieActorService.movieActorDetails(movieId,search);
     }
 
 }

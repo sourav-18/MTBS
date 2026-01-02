@@ -2,8 +2,11 @@ import { getRequest, patchRequest, PostRequest, PutRequest } from "./api.service
 
 const baseUrl=process.env.REACT_APP_BASE_URL+"/actors";
 
-export const getTotalActorCountDetails = async () => {
-    const apiUrl=baseUrl+"/count-details"
+export const getTotalActorCountDetails = async (search) => {
+    let apiUrl=baseUrl+"/count-details"
+    if(search){
+        apiUrl=apiUrl+'?search='+search;
+    }
     const apiRes=await getRequest({url:apiUrl});
     return apiRes;
 }
@@ -29,9 +32,19 @@ export const actorCreate = async (bodyData) => {
     return apiRes;
 }
 
-export const actorUpdate = async (bodyData) => {
-    let apiUrl=baseUrl;
+export const actorUpdate = async (bodyData,id) => {
+    let apiUrl=baseUrl+'/'+id;
     const apiRes=await PutRequest({url:apiUrl,body:bodyData});
     return apiRes;
 }
+
+export const getActorListForSelect = async (search="") => {
+    let apiUrl=baseUrl+`/list-for-select`;
+    if(search){
+        apiUrl=apiUrl+`?search=${search}`
+    }
+    const apiRes=await getRequest({url:apiUrl});
+    return apiRes;
+}
+
 

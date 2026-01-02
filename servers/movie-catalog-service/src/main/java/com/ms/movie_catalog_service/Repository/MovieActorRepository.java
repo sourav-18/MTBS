@@ -1,5 +1,6 @@
 package com.ms.movie_catalog_service.Repository;
 
+import com.ms.movie_catalog_service.dto.MovieActorDetailsDto;
 import com.ms.movie_catalog_service.entity.ActorEntity;
 import com.ms.movie_catalog_service.entity.MovieActorEntity;
 import com.ms.movie_catalog_service.entity.MovieEntity;
@@ -28,6 +29,14 @@ public interface MovieActorRepository extends JpaRepository<MovieActorEntity,Int
     @Modifying
     @Query("UPDATE movie_actors SET status=:status WHERE id IN :ids")
     Integer updateStatusByIds(@Param("status") MovieActorStatusType status,@Param("ids") Set<Integer> ids);
+
+    @Query("SELECT new com.ms.movie_catalog_service.dto.MovieActorDetailsDto(a.id,a.name,a.profilePicture)" +
+            " FROM movie_actors AS ma INNER JOIN actors AS a ON ma.actor=a WHERE ma.movie=:movie AND ma.status=:status " +
+            "AND (:search IS NULL OR a.name LIKE %:search%) AND (:actorId IS NULL OR a.id = :actorId)  ORDER BY ma.id DESC")
+    List<MovieActorDetailsDto> movieActorDetails(@Param("movie") MovieEntity movieEntity,@Param("status") MovieActorStatusType
+            status,@Param("search") String search,@Param("actorId") Integer actorId);
+
+
 
 
 

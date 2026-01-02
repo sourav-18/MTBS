@@ -8,12 +8,9 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity(name = "movies")
@@ -66,5 +63,10 @@ public class MovieEntity {
     @Column(columnDefinition = "jsonb")
     @ColumnTransformer(write = "?::json")
     private String posterImageUrls;
+
+    @Column(nullable = false)
+    private String duration;
+
+    private String trailerUrl;
 
 }

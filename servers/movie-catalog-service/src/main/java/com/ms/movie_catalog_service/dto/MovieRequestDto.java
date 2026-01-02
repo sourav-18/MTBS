@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -43,4 +44,13 @@ public class MovieRequestDto {
 
     @NotNull(message = "releaseDate is required")
     private LocalDate releaseDate;
+
+    @Size(max = 100,message = "profilePicture cannot exceed 100 characters")
+    @URL(message = "profilePicture must be valid url")
+    @NotNull(message = "profilePicture is required")
+    private String trailerUrl;
+
+    @NotBlank(message = "duration can't be empty")
+    @NotNull(message = "duration is required")
+    private String duration;
 }

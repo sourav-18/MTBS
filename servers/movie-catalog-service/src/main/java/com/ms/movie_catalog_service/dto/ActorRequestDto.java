@@ -1,8 +1,6 @@
 package com.ms.movie_catalog_service.dto;
 
 import com.ms.movie_catalog_service.entity.type.GenderType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +21,7 @@ public class ActorRequestDto {
 
     @Size(max = 100,message = "profilePicture cannot exceed 100 characters")
     @URL(message = "profilePicture must be valid url")
+    @NotNull(message = "profilePicture is required")
     private String profilePicture;
 
     @NotNull(message = "dob is required")

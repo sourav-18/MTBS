@@ -1,4 +1,4 @@
-package com.ms.movie_catalog_service.utils;
+package com.ms.auth_service.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

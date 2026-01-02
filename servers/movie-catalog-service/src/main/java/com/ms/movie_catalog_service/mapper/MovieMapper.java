@@ -19,6 +19,8 @@ public class MovieMapper {
         movieEntity.setName(movieRequestDto.getName());
         movieEntity.setDescription(movieRequestDto.getDescription());
         movieEntity.setReleaseDate(movieRequestDto.getReleaseDate());
+        movieEntity.setTrailerUrl(movieRequestDto.getTrailerUrl());
+        movieEntity.setDuration(movieRequestDto.getDuration());
         if(movieRequestDto.getCardImageUrls()!=null&&!movieRequestDto.getCardImageUrls().isEmpty()){
             movieEntity.setCardImagesUrls(JsonUtil.objectToJsonString(movieRequestDto.getCardImageUrls()));
         }
@@ -32,9 +34,12 @@ public class MovieMapper {
         MovieResponseDto movieResponseDto = new MovieResponseDto();
         movieResponseDto.setId(movieEntity.getId());
         movieResponseDto.setName(movieEntity.getName());
+        movieResponseDto.setTrailerUrl(movieEntity.getTrailerUrl());
         movieResponseDto.setDescription(movieEntity.getDescription());
         movieResponseDto.setLanguages(movieEntity.getLanguages().stream().map(LanguageMapper::toDto).collect(Collectors.toSet()));
         movieResponseDto.setReleaseDate(movieEntity.getReleaseDate());
+        movieResponseDto.setDuration(movieEntity.getDuration());
+        movieResponseDto.setStatus(movieEntity.getStatus());
         if (movieEntity.getCardImagesUrls() != null) {
             movieResponseDto.setCardImageUrls(JsonUtil.jsonStringToObject(movieEntity.getCardImagesUrls(), Set.class));
         }

@@ -3,6 +3,7 @@ package com.ms.movie_catalog_service.service;
 import com.ms.movie_catalog_service.Repository.ActorRepository;
 import com.ms.movie_catalog_service.Repository.MovieActorRepository;
 import com.ms.movie_catalog_service.Repository.MovieRepository;
+import com.ms.movie_catalog_service.dto.MovieActorDetailsDto;
 import com.ms.movie_catalog_service.dto.MovieActorUpdateDto;
 import com.ms.movie_catalog_service.entity.ActorEntity;
 import com.ms.movie_catalog_service.entity.MovieActorEntity;
@@ -113,5 +114,23 @@ public class MovieActorService {
         return ResponseUtils.sendSuccess("Movie actors remove successfully",null);
 
     }
+
+    public Map<String, Object> movieActorDetails(Integer movieId,String search){
+        MovieEntity movieEntity=movieRepository.findById(movieId).orElse(null);
+        if(movieEntity==null)return ResponseUtils.sendError("movie not found",null);
+
+        Integer actorId = null;
+        try {
+            actorId = Integer.parseInt(search);
+            search = null;
+        } catch (Exception ignored) {
+        }
+
+        List<MovieActorDetailsDto> movieActorDetailsDto=movieActorRepository.movieActorDetails(movieEntity,MovieActorStatusType.Active,search,actorId);
+        if(movieActorDetailsDto.isEmpty())return ResponseUtils.sendError("movie actor not found",null);
+        return ResponseUtils.sendSuccess("movie actor fetch successfully",movieActorDetailsDto);
+    }
+
+
 
 }

@@ -14,6 +14,7 @@ import {
   FaBell
 } from 'react-icons/fa';
 import ActorSection from '../../components/admin/ActorSection';
+import MovieSection from '../../components/admin/MovieSection';
 
 const Dashboard = () => {
   const location = useLocation();
@@ -40,6 +41,8 @@ const Dashboard = () => {
     switch (true) {
       case location.pathname.includes('/admin/actors'):
         return <ActorSection />;
+      case location.pathname.includes('/admin/movies'):
+        return <MovieSection/>;
       default:
         return (
           <div className="space-y-6">

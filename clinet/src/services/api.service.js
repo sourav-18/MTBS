@@ -78,7 +78,7 @@ export const PutRequest = ({ url, headerData = {}, body={} }) => {
     if (token) {
         headers['Authorization'] = token;
     }
-    return axios.post(url, body, {
+    return axios.put(url, body, {
         headers: headers
     }).then((data) => data.data).catch((error) => {
         return {

@@ -12,6 +12,7 @@ import com.ms.movie_catalog_service.entity.ActorEntity;
 import com.ms.movie_catalog_service.entity.LanguageEntity;
 import com.ms.movie_catalog_service.entity.MovieEntity;
 import com.ms.movie_catalog_service.entity.MovieImageEntity;
+import com.ms.movie_catalog_service.entity.type.ActorStatusType;
 import com.ms.movie_catalog_service.entity.type.ImageType;
 import com.ms.movie_catalog_service.entity.type.MovieStatusType;
 import com.ms.movie_catalog_service.mapper.MovieMapper;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
@@ -64,7 +66,9 @@ public class MovieService {
     }
 
     public  Map<String,Object> list(MovieListQueryDto movieListQueryDto){
-        Pageable pageable= PageRequest.of(movieListQueryDto.getPage()-1,movieListQueryDto.getLimit());
+        Pageable pageable= PageRequest.of(movieListQueryDto.getPage()-1,movieListQueryDto.getLimit(),
+                Sort.by(Sort.Direction.DESC, "id")
+        );
         Page<MovieEntity> movies =movieRepository.findAllMovies(MovieStatusType.Active,movieListQueryDto.getName(),pageable);
         ListWithPageDetailsDto <MovieResponseDto> listWithPageDetailsDto =new ListWithPageDetailsDto<>
                 (MovieMapper.toListDto(movies.getContent()),movies.getTotalPages(),movies.getTotalElements());
@@ -94,6 +98,18 @@ public class MovieService {
             throw new RuntimeException(e);
         }
         return ResponseUtils.sendSuccess("Movie update successfully",MovieMapper.toDto(movieEntity));
+    }
+
+    @Transactional
+    public Map<String, Object> statusUpdate(Integer MovieId, MovieStatusType status) {
+        MovieEntity movieEntity = movieRepository.findById(MovieId).orElse(null);
+
+        if (movieEntity == null)
+            return ResponseUtils.sendSuccess("movie not found", null);
+
+        movieEntity.setStatus(status);
+        movieRepository.save(movieEntity);
+        return ResponseUtils.sendSuccess("movie status update successfully", null);
     }
 
 

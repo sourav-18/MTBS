@@ -18,7 +18,7 @@ import {
   FaToggleOff,
   FaSearch
 } from 'react-icons/fa';
-import { actorCreate, actorStatusUpdate, getActorList, getTotalActorCountDetails } from '../../services/actor.service';
+import { actorCreate, actorStatusUpdate, actorUpdate, getActorList, getTotalActorCountDetails } from '../../services/actor.service';
 import { uploadImages } from '../../services/upload.service';
 
 const ActorSection = () => {
@@ -38,6 +38,7 @@ const ActorSection = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedActor, setSelectedActor] = useState(null);
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
     born: '',
     gender: 'Male',
@@ -52,9 +53,9 @@ const ActorSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 10;
 
-  const loadActorCountDetails = async () => {
+  const loadActorCountDetails = async (value=null) => {
     try {
-      const response = await getTotalActorCountDetails();
+      const response = await getTotalActorCountDetails(value);
       if (response.statusCode === 200) {
         setActorCountDetails(response.data);
       }
@@ -74,6 +75,13 @@ const ActorSection = () => {
           totalPages: response.data.totalPages || 0,
           currentPage: page
         });
+      } else {
+        setActors({
+          data: [],
+          totalCount: 0,
+          totalPages: 0,
+          currentPage: 0
+        })
       }
     } catch (error) {
       console.error('Error loading actors:', error);
@@ -91,6 +99,7 @@ const ActorSection = () => {
     const value = e.target.value;
     setSearchTerm(value);
     loadActors(1, value);
+    loadActorCountDetails(value);
   };
 
   const handlePageChange = (page) => {
@@ -119,40 +128,75 @@ const ActorSection = () => {
     }
   };
 
-  const handleCreate = async (e) => {
-    const bodyFromData = new FormData();
-    bodyFromData.append("file", formData.profilePic);
-    bodyFromData.append("folderName", "actors");
-    const imageUpload = await uploadImages(bodyFromData);
+  const handleCreate = async () => {
+    if (formData.profilePic) {
+      const bodyFromData = new FormData();
+      bodyFromData.append("file", formData.profilePic);
+      bodyFromData.append("folderName", "actors");
+      const imageUpload = await uploadImages(bodyFromData);
 
-    if (imageUpload.statusCode == 200) {
-      const crateActorData = {
-        name: formData.name,
-        gender: formData.gender,
-        profilePicture: imageUpload.data,
-        dob: formData.born,
-        nationality: formData.nationality,
-        rating: formData.rating
+      if (imageUpload.statusCode == 200) {
+        const crateActorData = {
+          name: formData.name,
+          gender: formData.gender,
+          profilePicture: imageUpload.data,
+          dob: formData.born,
+          nationality: formData.nationality,
+          rating: formData.rating
+        }
+        const createApiRes = await actorCreate(crateActorData);
+        console.log(createApiRes.message)
       }
-      const createApiRes = await actorCreate(crateActorData);
-      console.log(createApiRes.message)
-    }
 
-    // API call for add/edit actor would go here
-    handleCloseModal();
-    // Refresh the list after adding/editing
-    loadActors(actors.currentPage, searchTerm);
-    loadActorCountDetails();
+      // API call for add/edit actor would go here
+      handleCloseModal();
+      // Refresh the list after adding/editing
+      loadActors(actors.currentPage, searchTerm);
+      loadActorCountDetails();
+    } else {
+      alert("enter profile picture")
+    }
   };
 
- const handleUpdate=(e)=>{
-  e.stopPropagation()
-  console.log(selectedActor)
- }
+  const handleUpdate = async () => {
+    console.log(formData);
+    return;
+    const updateActorData = {
+      name: formData.name,
+      gender: formData.gender,
+      dob: formData.born,
+      nationality: formData.nationality,
+      rating: formData.rating,
+      profilePicture: formData.previewUrl
+    }
+
+    if (formData.profilePic) {
+      const bodyFromData = new FormData();
+      bodyFromData.append("file", formData.profilePic);
+      bodyFromData.append("folderName", "actors");
+      const imageUpload = await uploadImages(bodyFromData);
+      updateActorData.profilePicture = imageUpload.data;
+    }
+
+    const updateApiRes = await actorUpdate(updateActorData, formData.id);
+    console.log(updateApiRes.message);
+    handleCloseModal();
+    loadActors(actors.currentPage, searchTerm);
+    loadActorCountDetails();
+  }
+
+  const handleCreateOrUpdate = () => {
+    if (selectedActor) {
+      handleUpdate()
+    } else {
+      handleCreate();
+    }
+  }
 
   const handleEdit = (actor) => {
     setSelectedActor(actor);
     setFormData({
+      id: actor.id,
       name: actor.name || '',
       born: actor.dob || '',
       gender: actor.gender || 'Male',
@@ -242,8 +286,8 @@ const ActorSection = () => {
                 key={pageNum}
                 onClick={() => handlePageChange(pageNum)}
                 className={`w-10 h-10 rounded-lg ${currentPage === pageNum
-                    ? 'bg-primary-600 text-white'
-                    : 'border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  ? 'bg-primary-600 text-white'
+                  : 'border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
                   }`}
               >
                 {pageNum}
@@ -387,7 +431,7 @@ const ActorSection = () => {
                                 {actor.name}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {actor.awards || 'No awards'}
+                                {actor.id}
                               </div>
                             </div>
                           </div>
@@ -403,8 +447,8 @@ const ActorSection = () => {
                               {actor.nationality || 'N/A'}
                             </div>
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${actor.gender === 'Male'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                                : 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                              : 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300'
                               }`}>
                               {actor.gender === 'Male' ? <FaMars className="mr-1" /> : <FaVenus className="mr-1" />}
                               {actor.gender || 'N/A'}
@@ -428,8 +472,8 @@ const ActorSection = () => {
                           <button
                             onClick={() => handleStatusToggle(actor.id, actor.status)}
                             className={`p-2 rounded-lg transition-colors ${actor.status === 'Active'
-                                ? 'text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30'
-                                : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/30'
+                              ? 'text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30'
+                              : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/30'
                               }`}
                           >
                             {actor.status === 'Active' ? (
@@ -556,8 +600,8 @@ const ActorSection = () => {
                           </label>
                           <div className="grid grid-cols-2 gap-4">
                             <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.gender === 'Male'
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
-                                : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
+                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                              : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
                               }`}>
                               <input
                                 type="radio"
@@ -576,8 +620,8 @@ const ActorSection = () => {
                             </label>
 
                             <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.gender === 'Female'
-                                ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/30'
-                                : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
+                              ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/30'
+                              : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
                               }`}>
                               <input
                                 type="radio"
@@ -662,7 +706,8 @@ const ActorSection = () => {
                         Cancel
                       </button>
                       <button
-                        // onClick={(e)=>handleUpdate(e)}
+                        type="button"
+                        onClick={(e) => handleCreateOrUpdate(e)}
                         className="px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300"
                       >
                         {selectedActor ? 'Update Actor' : 'Add Actor'}
