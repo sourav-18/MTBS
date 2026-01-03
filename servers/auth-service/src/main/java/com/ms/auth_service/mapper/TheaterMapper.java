@@ -1,18 +1,18 @@
 package com.ms.auth_service.mapper;
 
-import com.ms.auth_service.dtos.TheaterRequestDto;
+import com.ms.auth_service.dtos.TheaterSignupRequestDto;
 import com.ms.auth_service.dtos.TheaterResponseDto;
 import com.ms.auth_service.entity.TheaterEntity;
 
 public class TheaterMapper {
 
-    public static TheaterEntity toEntity(TheaterRequestDto theaterRequestDto){
+    public static TheaterEntity toEntity(TheaterSignupRequestDto theaterSignupRequestDto){
         TheaterEntity theaterEntity=new TheaterEntity();
-        theaterEntity.setName(theaterRequestDto.getName());
-        theaterEntity.setEmail(theaterRequestDto.getEmail());
-        theaterEntity.setPassword(theaterRequestDto.getPassword());
-        theaterEntity.setProfilePicture(theaterRequestDto.getProfilePicture());
-        theaterEntity.setCity(theaterRequestDto.getCity());
+        theaterEntity.setName(theaterSignupRequestDto.getName());
+        theaterEntity.setEmail(theaterSignupRequestDto.getEmail());
+        theaterEntity.setPassword(theaterSignupRequestDto.getPassword());
+        theaterEntity.setProfilePicture(theaterSignupRequestDto.getProfilePicture());
+        theaterEntity.setCity(theaterSignupRequestDto.getCity());
         return theaterEntity;
     }
 

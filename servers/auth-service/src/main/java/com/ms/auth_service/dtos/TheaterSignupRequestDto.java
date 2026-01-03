@@ -5,12 +5,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class TheaterRequestDto {
+public class TheaterSignupRequestDto {
 
     @NotBlank(message = "name can't be blank")
     @NotNull(message = "name is required")
@@ -28,7 +27,12 @@ public class TheaterRequestDto {
     @NotNull(message = "confirmPassword is required")
     private String confirmPassword;
 
-    @NotBlank(message = "city can't be blank")
+    @NotNull(message = "otpId is required")
+    private Integer otpId;
+
+    @NotNull(message = "otp is required")
+    private Integer otp;
+
     @NotNull(message = "city is required")
     private CitiesType city;
 

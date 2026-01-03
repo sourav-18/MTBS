@@ -1,0 +1,10 @@
+package com.ms.auth_service.Repository;
+
+import com.ms.auth_service.entity.OtpEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface OtpRepository extends JpaRepository<OtpEntity,Integer> {
+
+}
