@@ -6,10 +6,7 @@ import com.ms.auth_service.dtos.TheaterSignupRequestDto;
 import com.ms.auth_service.services.TheaterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -33,6 +30,11 @@ public class Auth {
     @PostMapping("/theaters/forget-password")
     public Map<String, Object> theaterForgetPassword(@Valid @RequestBody ForgetPasswordDto forgetPasswordDto){
         return theaterService.forgetPassword(forgetPasswordDto);
+    }
+
+    @GetMapping("/theaters/isPresent")
+    public Map<String, Object> isPresent(@RequestParam("email") String email){
+        return theaterService.isPresent(email);
     }
 
 }

@@ -13,7 +13,7 @@ public class TheaterController {
 
     private final TheaterService theaterService;
 
-    @GetMapping("/isPresent")
+    @GetMapping("/")
     public Map<String, Object> isPresent(@RequestParam("email") String email){
         return theaterService.isPresent(email);
     }

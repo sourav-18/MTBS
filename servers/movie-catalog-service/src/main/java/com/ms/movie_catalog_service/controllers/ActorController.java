@@ -4,8 +4,6 @@ import com.ms.movie_catalog_service.dto.ActorListQueryDto;
 import com.ms.movie_catalog_service.dto.ActorRequestDto;
 import com.ms.movie_catalog_service.entity.type.ActorStatusType;
 import com.ms.movie_catalog_service.service.ActorService;
-import com.ms.movie_catalog_service.service.MovieActorService;
-import com.ms.movie_catalog_service.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

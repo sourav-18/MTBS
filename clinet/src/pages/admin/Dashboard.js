@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import ActorSection from '../../components/admin/ActorSection';
 import MovieSection from '../../components/admin/MovieSection';
+import TheaterSection from "../../components/admin/TheaterSection";
 
 const Dashboard = () => {
   const location = useLocation();
@@ -43,6 +44,8 @@ const Dashboard = () => {
         return <ActorSection />;
       case location.pathname.includes('/admin/movies'):
         return <MovieSection/>;
+      case location.pathname.includes('/admin/theaters'):
+        return <TheaterSection/>;
       default:
         return (
           <div className="space-y-6">

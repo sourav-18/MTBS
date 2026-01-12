@@ -5,12 +5,15 @@ import com.ms.auth_service.dtos.ForgetPasswordDto;
 import com.ms.auth_service.dtos.TheaterLoginRequestDto;
 import com.ms.auth_service.dtos.TheaterSignupRequestDto;
 import com.ms.auth_service.entity.TheaterEntity;
+import com.ms.auth_service.entity.types.UserRole;
 import com.ms.auth_service.mapper.TheaterMapper;
 import com.ms.auth_service.utils.ResponseUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -18,7 +21,9 @@ import java.util.Map;
 public class TheaterService {
 
     private final TheaterRepository theaterRepository;
+    private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
+    private final JwtService jwtService;
 
     public Map<String, Object> signup(TheaterSignupRequestDto theaterSignupRequestDto) {
         //todo password should be store in hash format in db
@@ -31,30 +36,36 @@ public class TheaterService {
         if (!otpService.verify(theaterSignupRequestDto.getOtpId(), theaterSignupRequestDto.getOtp(), theaterSignupRequestDto.getEmail()))
             return ResponseUtils.sendError("Invalid otp", null);
 
+        theaterSignupRequestDto.setPassword(passwordEncoder.encode(theaterSignupRequestDto.getPassword()));
         TheaterEntity theaterEntity = TheaterMapper.toEntity(theaterSignupRequestDto);
         theaterRepository.save(theaterEntity);
 
         return ResponseUtils.sendSuccess("Theater signup successfully", null);
     }
 
-    public Map<String, Object> login(TheaterLoginRequestDto theaterLoginRequestDto){
-        TheaterEntity theaterEntity= theaterRepository.findByEmail(theaterLoginRequestDto.getEmail());
-        if(theaterEntity==null||!theaterEntity.getPassword().equals(theaterLoginRequestDto.getPassword()))
+    public Map<String, Object> login(TheaterLoginRequestDto theaterLoginRequestDto) {
+        TheaterEntity theaterEntity = theaterRepository.findByEmail(theaterLoginRequestDto.getEmail());
+        if (
+                theaterEntity == null ||
+                        !passwordEncoder.matches(theaterLoginRequestDto.getPassword(), theaterEntity.getPassword())
+        )
             return ResponseUtils.sendError("Theater not found", null);
-
-        return ResponseUtils.sendSuccess("Theater Login successfully", null);
+        Map<String,String>role=new HashMap<>();
+        role.put("role","Theater");
+        String token = jwtService.generateTokeWithCustomRole(theaterEntity.getId().toString(), UserRole.Theater);
+        return ResponseUtils.sendSuccess("Theater Login successfully", token);
     }
 
     @Transactional
-    public Map<String, Object> forgetPassword(ForgetPasswordDto forgetPasswordDto){
+    public Map<String, Object> forgetPassword(ForgetPasswordDto forgetPasswordDto) {
         if (!forgetPasswordDto.getPassword().equals(forgetPasswordDto.getConfirmPassword()))
             return ResponseUtils.sendError("password and confirmPassword should be match", null);
 
         if (!otpService.verify(forgetPasswordDto.getOtpId(), forgetPasswordDto.getOtp(), forgetPasswordDto.getEmail()))
             return ResponseUtils.sendError("Invalid otp", null);
 
-        TheaterEntity theaterEntity=theaterRepository.findByEmail(forgetPasswordDto.getEmail());
-        if(theaterEntity==null)return ResponseUtils.sendSuccess("Theater not exist", null);
+        TheaterEntity theaterEntity = theaterRepository.findByEmail(forgetPasswordDto.getEmail());
+        if (theaterEntity == null) return ResponseUtils.sendSuccess("Theater not exist", null);
 
         theaterEntity.setPassword(forgetPasswordDto.getPassword());
 
@@ -68,7 +79,6 @@ public class TheaterService {
         boolean isPresent = id != null;
         return ResponseUtils.sendSuccess("Theater present data", isPresent);
     }
-
 
 
 }

@@ -33,7 +33,7 @@ public class TheaterEntity {
     private String profilePicture;
 
     @Enumerated(EnumType.STRING)
-    private final VerificationStatusType verificationStatus=VerificationStatusType.pending;
+    private final VerificationStatusType verificationStatus=VerificationStatusType.Pending;
     @Enumerated(EnumType.STRING)
     private final TheaterStatusType status=TheaterStatusType.Active;
 }

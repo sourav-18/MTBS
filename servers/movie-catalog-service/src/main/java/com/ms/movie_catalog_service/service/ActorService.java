@@ -38,7 +38,7 @@ public class ActorService {
 
     public Map<String, Object> list(ActorListQueryDto actorListQueryDto) {
         Pageable pageable = PageRequest.of(
-                actorListQueryDto.getPage() != null ? actorListQueryDto.getPage() - 1 : 1,
+                actorListQueryDto.getPage() != null ? actorListQueryDto.getPage() - 1 : 0,
                 actorListQueryDto.getLimit() != null ? actorListQueryDto.getLimit() : 10,
                 Sort.by(Sort.Direction.DESC, "id")
         );

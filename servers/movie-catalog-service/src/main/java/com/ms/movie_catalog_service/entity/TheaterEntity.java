@@ -1,8 +1,8 @@
 package com.ms.movie_catalog_service.entity;
 
-import com.ms.auth_service.entity.types.CitiesType;
-import com.ms.auth_service.entity.types.TheaterStatusType;
-import com.ms.auth_service.entity.types.VerificationStatusType;
+import com.ms.movie_catalog_service.entity.type.CitiesType;
+import com.ms.movie_catalog_service.entity.type.TheaterStatusType;
+import com.ms.movie_catalog_service.entity.type.VerificationStatusType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +33,8 @@ public class TheaterEntity {
     private String profilePicture;
 
     @Enumerated(EnumType.STRING)
-    private final VerificationStatusType verificationStatus=VerificationStatusType.pending;
+    private VerificationStatusType verificationStatus=VerificationStatusType.Pending;
+
     @Enumerated(EnumType.STRING)
-    private final TheaterStatusType status=TheaterStatusType.Active;
+    private TheaterStatusType status=TheaterStatusType.Active;
 }
