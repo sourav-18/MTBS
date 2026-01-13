@@ -23,6 +23,7 @@ import {
     FaBan
 } from 'react-icons/fa';
 import theaterService from "../../services/theater.service";
+import {uploadImages} from "../../services/upload.service";
 
 const TheaterSection = () => {
     const [theaters, setTheaters] = useState({
@@ -76,17 +77,24 @@ const TheaterSection = () => {
 
     useEffect(() => {
         loadTheaters(1, '', filters);
-        calculateStats();
+        calculateStats('',filters);
     }, [filters]);
 
-    const calculateStats = () => {
-        // Calculate stats based on filtered data
-        const total = mockTheaters.length;
-        const Pending = mockTheaters.filter(t => t.verificationStatus === 'Pending').length;
-        const Success = mockTheaters.filter(t => t.verificationStatus === 'Success').length;
-        const Failed = mockTheaters.filter(t => t.verificationStatus === 'Failed').length;
+    const calculateStats = async (search,filterParams) => {
+        const status=filterParams.status!=='all'?filterParams.status:null;
+        const verificationStatus=filterParams.verificationStatus!=='all'?filterParams.verificationStatus:null;
+        const city=filterParams.city!=='all'?filterParams.city:null;
 
-        setStats({ total, Pending, Success, Failed });
+        const apiRes=await theaterService.countDetails({search,city,verificationStatus,status})
+        if(apiRes.statusCode===200){
+            setStats({
+                total:apiRes.data.totalCount,
+                Pending:apiRes.data.pendingVerificationCount,
+                Success:apiRes.data.successVerificationCount,
+                Failed:apiRes.data.failedVerificationCount
+            });
+        }
+
     };
 
     const loadTheaters = async (page = 1, search = '', filterParams = filters) => {
@@ -99,31 +107,6 @@ const TheaterSection = () => {
             const listForAdminApiRes=await theaterService.listForAdmin({page,search,city,status,verificationStatus});
 
             if(listForAdminApiRes.statusCode===200) {
-                // // Filter logic
-                // let filtered = listForAdminApiRes.data.contains;
-                //
-                // // Search filter
-                // if (search) {
-                //     filtered = filtered.filter(theater =>
-                //         theater.name.toLowerCase().includes(search.toLowerCase()) ||
-                //         theater.id.toString().includes(search)
-                //     );
-                // }
-                //
-                // // Status filter
-                // if (filterParams.status !== 'all') {
-                //     filtered = filtered.filter(theater => theater.status === filterParams.status);
-                // }
-                //
-                // // Verification status filter
-                // if (filterParams.verificationStatus !== 'all') {
-                //     filtered = filtered.filter(theater => theater.verificationStatus === filterParams.verificationStatus);
-                // }
-                //
-                // // City filter
-                // if (filterParams.city !== 'all') {
-                //     filtered = filtered.filter(theater => theater.city === filterParams.city);
-                // }
                 setTheaters({
                     data: listForAdminApiRes.data.contains,
                     totalCount: listForAdminApiRes.data.totalCount,
@@ -146,10 +129,12 @@ const TheaterSection = () => {
     };
 
     const handleSearch = (e) => {
-        const value = e.target.value;
+        let value = e.target.value;
         setSearchTerm(value);
-        if(value&&value.length>1) {
+        if(value.length===0)value=null;
+        if(value===null||value.length>1) {
             loadTheaters(1, value, filters);
+            calculateStats(value,filters);
         }
 
     };
@@ -158,6 +143,7 @@ const TheaterSection = () => {
         const newFilters = { ...filters, [filterType]: value };
         setFilters(newFilters);
         loadTheaters(1, searchTerm, newFilters);
+        calculateStats(searchTerm,filters);
     };
 
     const handlePageChange = (page) => {
@@ -208,10 +194,27 @@ const TheaterSection = () => {
         console.log('Creating theater:', Object.fromEntries(formDataToSend));
         handleCloseModal();
         loadTheaters(theaters.currentPage, searchTerm, filters);
+        calculateStats(searchTerm,filters);
     };
 
-    const handleUpdate = () => {
-        console.log('Updating theater:', formData);
+    const handleUpdate = async () => {
+        const updateData={
+            name: formData.name,
+            city: formData.city,
+            profilePicture: formData.previewUrl,
+        }
+        if (formData.profilePic) {
+            const bodyFromData = new FormData();
+            bodyFromData.append("file", formData.profilePic);
+            bodyFromData.append("folderName", "actors");
+            const imageUpload = await uploadImages(bodyFromData);
+            updateData.profilePicture = imageUpload.data;
+        }
+
+        const apiRes=await theaterService.update(updateData,formData.id);
+
+        alert(apiRes.message);
+
         handleCloseModal();
         loadTheaters(theaters.currentPage, searchTerm, filters);
     };
@@ -219,6 +222,7 @@ const TheaterSection = () => {
     const handleEdit = (theater) => {
         setSelectedTheater(theater);
         setFormData({
+            id:theater.id,
             name: theater.name || '',
             city: theater.city || '',
             status: theater.status || 'active',
@@ -243,6 +247,7 @@ const TheaterSection = () => {
             if(apiRes.statusCode===200) {
                 alert(apiRes.message);
                 loadTheaters(theaters.currentPage, searchTerm, filters);
+                calculateStats(searchTerm,filters);
             }
         }
 
@@ -254,6 +259,7 @@ const TheaterSection = () => {
             if(apiRes.statusCode===200) {
                 alert(apiRes.message);
                 loadTheaters(theaters.currentPage, searchTerm, filters);
+                calculateStats(searchTerm,filters);
             }
         }
     };
@@ -389,15 +395,15 @@ const TheaterSection = () => {
                     </button>
 
                     {/* Add Theater Button */}
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleAddNew}
-                        className="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-4 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
-                    >
-                        <FaPlus />
-                        Add Theater
-                    </motion.button>
+                    {/*<motion.button*/}
+                    {/*    whileHover={{ scale: 1.05 }}*/}
+                    {/*    whileTap={{ scale: 0.95 }}*/}
+                    {/*    onClick={handleAddNew}*/}
+                    {/*    className="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-4 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all duration-300"*/}
+                    {/*>*/}
+                    {/*    <FaPlus />*/}
+                    {/*    Add Theater*/}
+                    {/*</motion.button>*/}
                 </div>
             </div>
 
@@ -716,87 +722,87 @@ const TheaterSection = () => {
                                         </div>
 
                                         {/* Status Selection */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Status
-                                            </label>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.status === 'Active'
-                                                    ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
-                                                    : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
-                                                }`}>
-                                                    <input
-                                                        type="radio"
-                                                        name="status"
-                                                        value="Active"
-                                                        checked={formData.status === 'Active'}
-                                                        onChange={handleInputChange}
-                                                        className="hidden"
-                                                    />
-                                                    <div className="flex items-center gap-2">
-                                                        <FaToggleOn className={`${formData.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`} />
-                                                        <span className={`font-medium ${formData.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                                            Active
-                                                        </span>
-                                                    </div>
-                                                </label>
+                                        {/*<div>*/}
+                                        {/*    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">*/}
+                                        {/*        Status*/}
+                                        {/*    </label>*/}
+                                        {/*    <div className="grid grid-cols-2 gap-4">*/}
+                                        {/*        <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.status === 'Active'*/}
+                                        {/*            ? 'border-green-500 bg-green-50 dark:bg-green-900/30'*/}
+                                        {/*            : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'*/}
+                                        {/*        }`}>*/}
+                                        {/*            <input*/}
+                                        {/*                type="radio"*/}
+                                        {/*                name="status"*/}
+                                        {/*                value="Active"*/}
+                                        {/*                checked={formData.status === 'Active'}*/}
+                                        {/*                onChange={handleInputChange}*/}
+                                        {/*                className="hidden"*/}
+                                        {/*            />*/}
+                                        {/*            <div className="flex items-center gap-2">*/}
+                                        {/*                <FaToggleOn className={`${formData.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`} />*/}
+                                        {/*                <span className={`font-medium ${formData.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>*/}
+                                        {/*                    Active*/}
+                                        {/*                </span>*/}
+                                        {/*            </div>*/}
+                                        {/*        </label>*/}
 
-                                                <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.status === 'inactive'
-                                                    ? 'border-red-500 bg-red-50 dark:bg-red-900/30'
-                                                    : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
-                                                }`}>
-                                                    <input
-                                                        type="radio"
-                                                        name="status"
-                                                        value="Inactive"
-                                                        checked={formData.status === 'Inactive'}
-                                                        onChange={handleInputChange}
-                                                        className="hidden"
-                                                    />
-                                                    <div className="flex items-center gap-2">
-                                                        <FaToggleOff className={`${formData.status === 'Inactive' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`} />
-                                                        <span className={`font-medium ${formData.status === 'Inactive' ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                                            Inactive
-                                                        </span>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </div>
+                                        {/*        <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.status === 'inactive'*/}
+                                        {/*            ? 'border-red-500 bg-red-50 dark:bg-red-900/30'*/}
+                                        {/*            : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'*/}
+                                        {/*        }`}>*/}
+                                        {/*            <input*/}
+                                        {/*                type="radio"*/}
+                                        {/*                name="status"*/}
+                                        {/*                value="Inactive"*/}
+                                        {/*                checked={formData.status === 'Inactive'}*/}
+                                        {/*                onChange={handleInputChange}*/}
+                                        {/*                className="hidden"*/}
+                                        {/*            />*/}
+                                        {/*            <div className="flex items-center gap-2">*/}
+                                        {/*                <FaToggleOff className={`${formData.status === 'Inactive' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`} />*/}
+                                        {/*                <span className={`font-medium ${formData.status === 'Inactive' ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>*/}
+                                        {/*                    Inactive*/}
+                                        {/*                </span>*/}
+                                        {/*            </div>*/}
+                                        {/*        </label>*/}
+                                        {/*    </div>*/}
+                                        {/*</div>*/}
 
                                         {/* Verification Status Selection */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Verification Status
-                                            </label>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {verificationStatusOptions.map((status) => (
-                                                    <label
-                                                        key={status.value}
-                                                        className={`flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.verificationStatus === status.value
-                                                            ? `border-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-500 bg-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-50 dark:bg-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-900/30`
-                                                            : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'
-                                                        }`}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="verificationStatus"
-                                                            value={status.value}
-                                                            checked={formData.verificationStatus === status.value}
-                                                            onChange={handleInputChange}
-                                                            className="hidden"
-                                                        />
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            {status.icon}
-                                                            <span className={`text-xs font-medium ${formData.verificationStatus === status.value
-                                                                ? `text-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-600 dark:text-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-400`
-                                                                : 'text-gray-700 dark:text-gray-300'
-                                                            }`}>
-                                                                {status.label}
-                                                            </span>
-                                                        </div>
-                                                    </label>
-                                                ))}
-                                            </div>
+                                            {/*<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">*/}
+                                            {/*    Verification Status*/}
+                                            {/*</label>*/}
+                                            {/*<div className="grid grid-cols-3 gap-2">*/}
+                                            {/*    {verificationStatusOptions.map((status) => (*/}
+                                            {/*        <label*/}
+                                            {/*            key={status.value}*/}
+                                            {/*            className={`flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.verificationStatus === status.value*/}
+                                            {/*                ? `border-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-500 bg-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-50 dark:bg-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-900/30`*/}
+                                            {/*                : 'border-gray-300 dark:border-dark-700 hover:border-gray-400 dark:hover:border-dark-600'*/}
+                                            {/*            }`}*/}
+                                            {/*        >*/}
+                                            {/*            <input*/}
+                                            {/*                type="radio"*/}
+                                            {/*                name="verificationStatus"*/}
+                                            {/*                value={status.value}*/}
+                                            {/*                checked={formData.verificationStatus === status.value}*/}
+                                            {/*                onChange={handleInputChange}*/}
+                                            {/*                className="hidden"*/}
+                                            {/*            />*/}
+                                            {/*            <div className="flex flex-col items-center gap-1">*/}
+                                            {/*                {status.icon}*/}
+                                            {/*                <span className={`text-xs font-medium ${formData.verificationStatus === status.value*/}
+                                            {/*                    ? `text-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-600 dark:text-${status.value === 'Pending' ? 'yellow' : status.value === 'Success' ? 'green' : 'red'}-400`*/}
+                                            {/*                    : 'text-gray-700 dark:text-gray-300'*/}
+                                            {/*                }`}>*/}
+                                            {/*                    {status.label}*/}
+                                            {/*                </span>*/}
+                                            {/*            </div>*/}
+                                            {/*        </label>*/}
+                                            {/*    ))}*/}
+                                            {/*</div>*/}
                                         </div>
 
                                         {/* Profile Picture Upload */}

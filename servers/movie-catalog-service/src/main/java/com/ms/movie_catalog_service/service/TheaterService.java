@@ -1,10 +1,7 @@
 package com.ms.movie_catalog_service.service;
 
 import com.ms.movie_catalog_service.Repository.TheaterRepository;
-import com.ms.movie_catalog_service.dto.ActorListResponseDto;
-import com.ms.movie_catalog_service.dto.ListWithPageDetailsDto;
-import com.ms.movie_catalog_service.dto.TheaterForAdminResponse;
-import com.ms.movie_catalog_service.dto.TheaterListQueryDto;
+import com.ms.movie_catalog_service.dto.*;
 import com.ms.movie_catalog_service.entity.TheaterEntity;
 import com.ms.movie_catalog_service.entity.type.TheaterStatusType;
 import com.ms.movie_catalog_service.entity.type.VerificationStatusType;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +33,8 @@ public class TheaterService {
         );
 
         Page<TheaterForAdminResponse> theaterList=
-                theaterRepository.listForAdmin( theaterListQueryDto.getSearch(),
+                theaterRepository.listForAdmin(
+                                        theaterListQueryDto.getSearch(),
                                         theaterListQueryDto.getStatus(),
                                         theaterListQueryDto.getCity(),
                                         theaterListQueryDto.getVerificationStatus(),
@@ -71,6 +70,54 @@ public class TheaterService {
         theaterRepository.save(theaterEntity);
         //todo send mail to theate for status update
         return ResponseUtils.sendSuccess("Theater status update successfully",null);
+    }
+
+    public  Map<String,Object> getCountDetails(TheaterListQueryDto theaterListQueryDto){
+        List<CommonStatusCountDetailsDto> verificationStatusCount=theaterRepository.getVerificationStatusCountDetails(
+                theaterListQueryDto.getSearch(),
+                theaterListQueryDto.getStatus(),
+                theaterListQueryDto.getCity(),
+                theaterListQueryDto.getVerificationStatus()
+        );
+        List<CommonStatusCountDetailsDto>  statusCountDetails=theaterRepository.getStatusCountDetails(
+                theaterListQueryDto.getSearch(),
+                theaterListQueryDto.getStatus(),
+                theaterListQueryDto.getCity(),
+                theaterListQueryDto.getVerificationStatus()
+        );
+        TheaterCountDetailsDto theaterCountDetailsDto=new TheaterCountDetailsDto();
+
+        verificationStatusCount.forEach((item)->{
+            if(Objects.equals(item.getStatus(), VerificationStatusType.Pending.name())){
+                theaterCountDetailsDto.setPendingVerificationCount(item.getCount());
+            }else if(Objects.equals(item.getStatus(), VerificationStatusType.Success.name())){
+                theaterCountDetailsDto.setSuccessVerificationCount(item.getCount());
+            }else if(Objects.equals(item.getStatus(), VerificationStatusType.Failed.name())){
+                theaterCountDetailsDto.setFailedVerificationCount(item.getCount());
+            }
+        });
+
+        statusCountDetails.forEach((item)->{
+            if(Objects.equals(item.getStatus(), TheaterStatusType.Active.name())){
+                theaterCountDetailsDto.setActiveStausCount(item.getCount());
+            }else if(Objects.equals(item.getStatus(), TheaterStatusType.Inactive.name())){
+                theaterCountDetailsDto.setInActiveStausCount(item.getCount());
+            }
+        });
+
+        theaterCountDetailsDto.setTotalCount();
+
+        return ResponseUtils.sendSuccess("Theater count details fetch successfully",theaterCountDetailsDto);
+    }
+
+    public Map<String,Object> update(Integer id,TheaterRequestDto theaterRequestDto){
+        TheaterEntity theaterEntity= theaterRepository.findById(id).orElse(null);
+        if(theaterEntity==null)return ResponseUtils.sendError("Theater not found",null);
+        theaterEntity.setName(theaterRequestDto.getName());
+        theaterEntity.setCity(theaterRequestDto.getCity());
+        theaterEntity.setProfilePicture(theaterRequestDto.getProfilePicture());
+        theaterRepository.save(theaterEntity);
+        return ResponseUtils.sendSuccess("Theater update successfully",null);
     }
 
 

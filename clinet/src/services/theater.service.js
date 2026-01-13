@@ -29,4 +29,24 @@ theaterService.verificationStatusUpdate=async ({id,verificationStatus})=>{
     return apiRes;
 }
 
+theaterService.countDetails=async ({search,city,verificationStatus,status})=>{
+    let apiUrl = baseUrl + `/count-details?`;
+
+    if (search&&search.length>1) {
+        apiUrl = apiUrl + '&search=' + search;
+    }
+    if(city)apiUrl = apiUrl + '&city=' + city;
+    if(status)apiUrl = apiUrl + '&status=' + status;
+    if(verificationStatus)apiUrl = apiUrl + '&verificationStatus=' + verificationStatus;
+
+    const apiRes = await getRequest({ url: apiUrl });
+    return apiRes;
+}
+
+theaterService.update = async (bodyData,id) => {
+    let apiUrl=baseUrl+'/'+id;
+    const apiRes=await PutRequest({url:apiUrl,body:bodyData});
+    return apiRes;
+}
+
 export default  theaterService;
